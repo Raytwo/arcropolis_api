@@ -1,0 +1,14 @@
+[package]
+name = "arcropolis-api"
+version = "0.1.0"
+authors = ["Raytwo <raytwost@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+skyline_smash = { git = "https://github.com/ultimate-research/skyline-smash.git" }
+arcropolis-core = { path = "../arcropolis_core" }
+
+[patch.crates-io]
+getrandom = { git = "https://github.com/skyline-rs/getrandom" }
