@@ -7,16 +7,19 @@ mod hash40;
 pub use hash40::{hash40, Hash40};
 
 extern "C" {
-    fn arcrop_register_callback(hash: Hash40);
-    fn arcrop_load_file(hash: Hash40, buffer: *mut u8, length: usize);
+    fn arcrop_register_callback(hash: u64, length: usize, cb: CallbackFn);
+    fn arcrop_load_file(hash: u64, buffer: *mut u8, length: usize);
     fn arcrop_api_version();
 }
+
+// Hash, out_buffer, length
+pub type CallbackFn = extern "C" fn(u64, *mut u8, usize);
 
 /// /!\ TEMP IMPLEMENTATION, SUBJECT TO CHANGE /!\  
 /// Register your callback to ARCropolis.  
 /// Do note that, for the time being, hooking a shared file means your callback will be called for all instances of it.
-pub fn register_callback<H: Into<Hash40>>(hash: H) {
-    unsafe { arcrop_register_callback(hash.into()) }
+pub fn register_callback<H: Into<Hash40>>(hash: H, length: usize, cb: CallbackFn) {
+    unsafe { arcrop_register_callback(hash.into().as_u64(), length, cb) }
 }
 
 /// /!\ TEMP IMPLEMENTATION, SUBJECT TO CHANGE /!\  
@@ -29,7 +32,7 @@ where
 {
     let buf = out_buffer.as_mut();
 
-    unsafe { arcrop_load_file(hash.into(), buf.as_mut_ptr(), buf.len()) }
+    unsafe { arcrop_load_file(hash.into().as_u64(), buf.as_mut_ptr(), buf.len()) }
 }
 
 /// /!\ TEMP IMPLEMENTATION, SUBJECT TO CHANGE /!\  
@@ -37,4 +40,5 @@ where
 /// Use it to ensure your plugin is still compatible before performing API calls.
 pub fn get_api_version() {
     unsafe { arcrop_api_version() }
+    unimplemented!()
 }
