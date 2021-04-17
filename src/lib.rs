@@ -9,7 +9,7 @@ pub use hash40::{hash40, Hash40};
 extern "C" {
     fn arcrop_register_callback(hash: u64, length: usize, cb: CallbackFn);
     fn arcrop_register_callback_with_path(hash: u64, length: usize, path: *const u8, cb: CallbackFn);
-    fn arcrop_load_file(out_size: *mut usize, hash: u64, buffer: *mut u8, length: usize);
+    fn arcrop_load_file(hash: u64, buffer: *mut u8, length: usize, out_size: &mut usize) -> bool;
     fn arcrop_api_version();
 }
 
@@ -44,7 +44,7 @@ where
 
     let mut out_size: usize = 0;
 
-    unsafe { arcrop_load_file(&mut out_size, hash.into().as_u64(), buf.as_mut_ptr(), buf.len()) }
+    let result = unsafe { arcrop_load_file(hash.into().as_u64(), buf.as_mut_ptr(), buf.len(), &mut out_size) };
 
     out_size
 }
