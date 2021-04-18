@@ -14,8 +14,8 @@ extern "C" {
 }
 
 // Hash, out_buffer, length
-pub type CallbackFn = extern "C" fn(*mut usize, u64, *mut u8, usize) -> bool;
-pub type StreamCallbackFn = extern "C" fn(*mut usize, u64, *mut u8, usize) -> bool;
+pub type CallbackFn = extern "C" fn(&mut usize, u64, *mut u8, usize) -> bool;
+pub type StreamCallbackFn = extern "C" fn(&mut usize, u64, *mut u8, usize) -> bool;
 
 /// /!\ TEMP IMPLEMENTATION, SUBJECT TO CHANGE /!\  
 /// Register your callback to ARCropolis.  
