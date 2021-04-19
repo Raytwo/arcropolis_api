@@ -1,16 +1,18 @@
 #![feature(str_strip)]
 
-use std::{ffi::CString, path::PathBuf};
-use std::slice;
+use std::ffi::CString;
 
 mod hash40;
 pub use hash40::{hash40, Hash40};
+
+pub use arcropolis_api_macro::*;
 
 extern "C" {
     fn arcrop_register_callback(hash: u64, length: usize, cb: CallbackFn);
     fn arcrop_register_callback_with_path(hash: u64, length: usize, path: *const u8, cb: CallbackFn);
     fn arcrop_load_file(hash: u64, buffer: *mut u8, length: usize, out_size: &mut usize) -> bool;
-    fn arcrop_api_version();
+    fn arcrop_api_version() -> &'static ApiVersion;
+    fn arcrop_require_api_version(major: u32, minor: u32);
 }
 
 // Hash, out_buffer, length, out_size
@@ -18,9 +20,6 @@ pub type CallbackFn = extern "C" fn(u64, *mut u8, usize, &mut usize) -> bool;
 // Hash, out_path, out_size
 pub type StreamCallbackFn = extern "C" fn(u64, *mut u8, &mut usize) -> bool;
 
-/// /!\ TEMP IMPLEMENTATION, SUBJECT TO CHANGE /!\  
-/// Register your callback to ARCropolis.  
-/// Do note that, for the time being, hooking a shared file means your callback will be called for all instances of it.
 pub fn register_callback<H: Into<Hash40>>(hash: H, length: usize, cb: CallbackFn) {
     unsafe { arcrop_register_callback(hash.into().as_u64(), length, cb) }
 }
@@ -33,10 +32,7 @@ where
     unsafe { arcrop_register_callback_with_path(hash.into().as_u64(), length, c_path.as_bytes_with_nul().as_ptr(), cb) }
 }
 
-/// /!\ TEMP IMPLEMENTATION, SUBJECT TO CHANGE /!\  
-/// Provide the original data.arc file, or the user's if one is present.  
-/// To be called from within your callback function if you desire to work on an existing file. Make sure the buffer is at least as large as the size you provided when registering.
-pub fn load_original_file<H, B>(hash: H, mut buffer: B) -> usize
+pub fn load_original_file<H, B>(hash: H, mut buffer: B) -> Option<usize>
 where
     H: Into<Hash40>,
     B: AsMut<[u8]>,
@@ -45,15 +41,25 @@ where
 
     let mut out_size: usize = 0;
 
-    let result = unsafe { arcrop_load_file(hash.into().as_u64(), buf.as_mut_ptr(), buf.len(), &mut out_size) };
+    let success = unsafe { arcrop_load_file(hash.into().as_u64(), buf.as_mut_ptr(), buf.len(), &mut out_size) };
 
-    out_size
+    if success {
+        Some(out_size)
+    } else {
+        None
+    }
 }
 
-/// /!\ TEMP IMPLEMENTATION, SUBJECT TO CHANGE /!\  
-/// Provide the version of the API supported by the current build of ARCropolis.  
-/// Use it to ensure your plugin is still compatible before performing API calls.
-pub fn get_api_version() {
+pub fn get_api_version() -> &'static ApiVersion {
     unsafe { arcrop_api_version() }
-    unimplemented!()
+}
+
+pub fn require_api_version(major: u32, minor: u32) {
+    unsafe { arcrop_require_api_version(major, minor) }
+}
+
+#[repr(C)]
+pub struct ApiVersion {
+    major: u32,
+    minor: u32,
 }
