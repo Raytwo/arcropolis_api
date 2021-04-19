@@ -13,9 +13,10 @@ extern "C" {
     fn arcrop_api_version();
 }
 
-// Hash, out_buffer, length
-pub type CallbackFn = extern "C" fn(&mut usize, u64, *mut u8, usize) -> bool;
-pub type StreamCallbackFn = extern "C" fn(&mut usize, u64, *mut u8, usize) -> bool;
+// Hash, out_buffer, length, out_size
+pub type CallbackFn = extern "C" fn(u64, *mut u8, usize, &mut usize) -> bool;
+// Hash, out_path, out_size
+pub type StreamCallbackFn = extern "C" fn(u64, *mut u8, &mut usize) -> bool;
 
 /// /!\ TEMP IMPLEMENTATION, SUBJECT TO CHANGE /!\  
 /// Register your callback to ARCropolis.  
