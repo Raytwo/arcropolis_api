@@ -9,7 +9,7 @@ pub use arcropolis_api_macro::*;
 
 extern "C" {
     fn arcrop_register_callback(hash: u64, length: usize, cb: CallbackFn);
-    fn arcrop_register_callback_with_path(hash: u64, length: usize, path: *const u8, cb: CallbackFn);
+    fn arcrop_register_callback_with_path(hash: u64, cb: StreamCallbackFn);
     fn arcrop_load_file(hash: u64, buffer: *mut u8, length: usize, out_size: &mut usize) -> bool;
     fn arcrop_api_version() -> &'static ApiVersion;
     fn arcrop_require_api_version(major: u32, minor: u32);
@@ -24,12 +24,11 @@ pub fn register_callback<H: Into<Hash40>>(hash: H, length: usize, cb: CallbackFn
     unsafe { arcrop_register_callback(hash.into().as_u64(), length, cb) }
 }
 
-pub fn register_stream_callback<H>(hash: H, length: usize, path: &str, cb: CallbackFn) 
+pub fn register_stream_callback<H>(hash: H, cb: StreamCallbackFn) 
 where
     H: Into<Hash40>
 {
-    let c_path = CString::new(path).unwrap();
-    unsafe { arcrop_register_callback_with_path(hash.into().as_u64(), length, c_path.as_bytes_with_nul().as_ptr(), cb) }
+    unsafe { arcrop_register_callback_with_path(hash.into().as_u64(), cb) }
 }
 
 pub fn load_original_file<H, B>(hash: H, mut buffer: B) -> Option<usize>
