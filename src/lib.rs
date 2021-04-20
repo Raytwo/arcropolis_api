@@ -1,9 +1,10 @@
 #![feature(str_strip)]
 
-use std::ffi::CString;
-
 mod hash40;
 pub use hash40::{hash40, Hash40};
+
+mod stream_path;
+pub use stream_path::*;
 
 pub use arcropolis_api_macro::*;
 
