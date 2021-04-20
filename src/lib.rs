@@ -29,6 +29,7 @@ pub fn register_stream_callback<H>(hash: H, cb: StreamCallbackFn)
 where
     H: Into<Hash40>
 {
+    require_api_version(1, 1);
     unsafe { arcrop_register_callback_with_path(hash.into().as_u64(), cb) }
 }
 
