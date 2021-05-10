@@ -15,7 +15,7 @@ extern "C" {
     fn arcrop_load_file(hash: u64, buffer: *mut u8, length: usize, out_size: &mut usize) -> bool;
     fn arcrop_api_version() -> &'static ApiVersion;
     fn arcrop_require_api_version(major: u32, minor: u32);
-    fn arcrop_register_extension_callback(hash: Hash40, cb: ExtCallbackFn);
+    fn arcrop_register_extension_callback(hash: u64, cb: ExtCallbackFn);
 }
 
 // Hash, out_buffer, length, out_size
@@ -24,7 +24,7 @@ pub type CallbackFn = extern "C" fn(u64, *mut u8, usize, &mut usize) -> bool;
 pub type StreamCallbackFn = extern "C" fn(u64, *mut u8, &mut usize) -> bool;
 
 // Extension hash, out_buffer, length, out_size
-pub type ExtCallbackFn = extern "C" fn(Hash40, *mut u8, usize, &mut usize) -> bool;
+pub type ExtCallbackFn = extern "C" fn(u64, *mut u8, usize, &mut usize) -> bool;
 
 pub fn register_callback<H: Into<Hash40>>(hash: H, length: usize, cb: CallbackFn) {
     unsafe { arcrop_register_callback(hash.into().as_u64(), length, cb) }
@@ -43,7 +43,7 @@ where
     H: Into<Hash40>,
 {
     require_api_version(1, 2);
-    unsafe { arcrop_register_extension_callback(hash.into(), cb) }
+    unsafe { arcrop_register_extension_callback(hash.into().as_u64(), cb) }
 }
 
 pub fn load_original_file<H, B>(hash: H, mut buffer: B) -> Option<usize>
