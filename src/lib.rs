@@ -28,7 +28,7 @@ pub type StreamCallbackFn = extern "C" fn(u64, *mut u8, &mut usize) -> bool;
 
 // Extension hash, out_buffer, length, out_size
 pub type ExtCallbackFn = extern "C" fn(u64, *mut u8, usize, &mut usize) -> bool;
-// Character pointer, string length
+// Filepath string, filepath length, smashpath string, smashpath length
 pub type RejectedExtFn = extern "C" fn(*const u8, usize, *const u8, usize);
 
 pub enum LookupFailure {

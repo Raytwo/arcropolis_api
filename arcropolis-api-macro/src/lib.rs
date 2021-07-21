@@ -98,7 +98,7 @@ pub fn ext_callback(_: TokenStream, item: TokenStream) -> TokenStream {
     quote!(
         #vis mod #ident {
             pub(crate) fn install<H: Into<::arcropolis_api::Hash40>>(extension: H) {
-                ::arcropolis_api::register_extension_callback(extension.into(), callback)
+                ::arcropolis_api::register_rejected_extension_callback(extension.into(), callback)
             }
 
             extern "C" fn callback(
@@ -119,6 +119,41 @@ pub fn ext_callback(_: TokenStream, item: TokenStream) -> TokenStream {
             }
 
             const CB: fn(u64, &mut [u8]) -> Option<usize> = super::#ident;
+        }
+
+        #func
+    ).into()
+}
+
+#[proc_macro_attribute]
+pub fn rejected_ext_callback(_: TokenStream, item: TokenStream) -> TokenStream {
+    let func = syn::parse_macro_input!(item as syn::ItemFn);
+
+    let ident = &func.sig.ident;
+    let vis = &func.vis;
+
+    quote!(
+        #vis mod #ident {
+            pub(crate) fn install<H: Into<::arcropolis_api::Hash40>>(extension: H) {
+                ::arcropolis_api::register_rejected_extension_callback(extension.into(), callback)
+            }
+
+            extern "C" fn callback(
+                filepath_string: *const u8,
+                filepath_length: usize,
+                smashpath_string: *const u8,
+                smashpath_length: usize
+            ) {
+                let filepath = unsafe { std::slice::from_raw_parts(filepath_string, filepath_length) };
+                let smashpath = unsafe { std::slice::from_raw_parts(smashpath_string, smashpath_length) };
+
+                let filepath = std::str::from_utf8(filepath).expect("Received invalid UTF-8 string from ARCropolis");
+                let smashpath = std::str::from_utf8(smashpath).expect("Received invalid UTF-8 string from ARCropolis");
+
+                CB(filepath, smashpath)
+            }
+
+            const CB: fn(&str, &str) = super::#ident;
         }
 
         #func
