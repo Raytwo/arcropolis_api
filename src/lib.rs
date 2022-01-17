@@ -5,6 +5,7 @@ mod hash40;
 pub use hash40::{hash40, Hash40};
 
 mod stream_path;
+use smash_arc::LoadedArc;
 pub use stream_path::*;
 
 pub use arcropolis_api_macro::*;
@@ -16,7 +17,19 @@ extern "C" {
     fn arcrop_api_version() -> &'static ApiVersion;
     fn arcrop_require_api_version(major: u32, minor: u32);
     fn arcrop_register_extension_callback(hash: u64, cb: ExtCallbackFn);
+    fn arcrop_get_decompressed_size(hash: u64, out_size: &mut usize) -> bool;
+    fn arcrop_get_loaded_arc(out: &mut &'static LoadedArc) -> bool;
+    fn arcrop_register_event_callback(ty: Event, callback: EventCallbackFn);
 }
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub enum Event {
+    ArcFilesystemMounted,
+    ModFilesystemMounted,
+}
+
+pub type EventCallbackFn = extern "C" fn(Event);
 
 // Hash, out_buffer, length, out_size
 pub type CallbackFn = extern "C" fn(u64, *mut u8, usize, &mut usize) -> bool;
