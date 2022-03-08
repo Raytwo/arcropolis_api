@@ -20,6 +20,7 @@ extern "C" {
     fn arcrop_get_decompressed_size(hash: u64, out_size: &mut usize) -> bool;
     fn arcrop_get_loaded_arc(out: &mut &'static LoadedArc) -> bool;
     fn arcrop_register_event_callback(ty: Event, callback: EventCallbackFn);
+    fn arcrop_is_file_loaded(hash: u64) -> bool;
 }
 
 #[repr(C)]
@@ -90,6 +91,10 @@ pub fn get_api_version() -> &'static ApiVersion {
 
 pub fn require_api_version(major: u32, minor: u32) {
     unsafe { arcrop_require_api_version(major, minor) }
+}
+
+pub fn is_file_loaded(hash: u64) -> bool {
+    unsafe { arcrop_is_file_loaded(hash) }
 }
 
 #[repr(C)]
