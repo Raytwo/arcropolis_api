@@ -85,16 +85,23 @@ where
     }
 }
 
+pub fn is_file_loaded<H>(hash: H) -> bool
+where
+    H: Into<Hash40>
+{   
+    unsafe {
+        arcrop_is_file_loaded(
+            hash.into().as_u64()
+        )
+    }
+}
+
 pub fn get_api_version() -> &'static ApiVersion {
     unsafe { arcrop_api_version() }
 }
 
 pub fn require_api_version(major: u32, minor: u32) {
     unsafe { arcrop_require_api_version(major, minor) }
-}
-
-pub fn is_file_loaded(hash: u64) -> bool {
-    unsafe { arcrop_is_file_loaded(hash) }
 }
 
 #[repr(C)]
