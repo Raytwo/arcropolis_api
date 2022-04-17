@@ -20,7 +20,7 @@ extern "C" {
     fn arcrop_get_decompressed_size(hash: u64, out_size: &mut usize) -> bool;
     fn arcrop_get_loaded_arc(out: &mut &'static LoadedArc) -> bool;
     fn arcrop_register_event_callback(ty: Event, callback: EventCallbackFn);
-    fn arcrop_show_mod_maanager();
+    fn arcrop_show_mod_manager();
 }
 
 #[repr(C)]
