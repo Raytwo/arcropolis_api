@@ -94,6 +94,6 @@ pub fn require_api_version(major: u32, minor: u32) {
 
 #[repr(C)]
 pub struct ApiVersion {
-    major: u32,
-    minor: u32,
+    pub major: u32,
+    pub minor: u32,
 }
