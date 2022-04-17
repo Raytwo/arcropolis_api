@@ -87,7 +87,7 @@ where
 
 pub fn show_mod_manager() {
     require_api_version(1, 7);
-    unsafe { arcrop_show_mod_maanager(); }
+    unsafe { arcrop_show_mod_manager(); }
 }
 
 pub fn get_api_version() -> &'static ApiVersion {
