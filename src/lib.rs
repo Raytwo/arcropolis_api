@@ -21,6 +21,7 @@ extern "C" {
     fn arcrop_get_loaded_arc(out: &mut &'static LoadedArc) -> bool;
     fn arcrop_register_event_callback(ty: Event, callback: EventCallbackFn);
     fn arcrop_is_file_loaded(hash: u64) -> bool;
+    fn arcrop_show_mod_manager();
 }
 
 #[repr(C)]
@@ -96,6 +97,11 @@ where
     }
 }
 
+pub fn show_mod_manager() {
+    require_api_version(1, 7);
+    unsafe { arcrop_show_mod_manager(); }
+}
+
 pub fn get_api_version() -> &'static ApiVersion {
     unsafe { arcrop_api_version() }
 }
@@ -106,6 +112,6 @@ pub fn require_api_version(major: u32, minor: u32) {
 
 #[repr(C)]
 pub struct ApiVersion {
-    major: u32,
-    minor: u32,
+    pub major: u32,
+    pub minor: u32,
 }
