@@ -21,7 +21,10 @@ extern "C" {
     fn arcrop_get_loaded_arc(out: &mut &'static LoadedArc) -> bool;
     fn arcrop_register_event_callback(ty: Event, callback: EventCallbackFn);
     fn arcrop_is_file_loaded(hash: u64) -> bool;
+    fn arcrop_is_mod_enabled(hash: u64) -> bool;
     fn arcrop_show_mod_manager();
+    fn arcrop_show_config_editor();
+    fn arcrop_show_main_menu();
 }
 
 #[repr(C)]
@@ -89,9 +92,26 @@ where
 pub fn is_file_loaded<H>(hash: H) -> bool
 where
     H: Into<Hash40>
-{   
+{
+    require_api_version(1, 5);
+
     unsafe {
         arcrop_is_file_loaded(
+            hash.into().as_u64()
+        )
+    }
+}
+
+/// Requires an absolute path, including the ``sd:/`` root.
+/// Do NOT include a trailing slash after the directory's name.
+pub fn is_mod_enabled<H>(hash: H) -> bool
+where
+    H: Into<Hash40>
+{
+    require_api_version(1, 8);
+
+    unsafe {
+        arcrop_is_mod_enabled(
             hash.into().as_u64()
         )
     }
@@ -100,6 +120,16 @@ where
 pub fn show_mod_manager() {
     require_api_version(1, 7);
     unsafe { arcrop_show_mod_manager(); }
+}
+
+pub fn show_config_editor() {
+    require_api_version(1, 8);
+    unsafe { arcrop_show_config_editor(); }
+}
+
+pub fn show_main_menu() {
+    require_api_version(1, 8);
+    unsafe { arcrop_show_main_menu(); }
 }
 
 pub fn get_api_version() -> &'static ApiVersion {
