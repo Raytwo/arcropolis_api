@@ -48,19 +48,19 @@ pub fn register_callback<H: Into<Hash40>>(hash: H, length: usize, cb: CallbackFn
     unsafe { arcrop_register_callback(hash.into().as_u64(), length, cb) }
 }
 
+#[arcrop_api(version="1.1")]
 pub fn register_stream_callback<H>(hash: H, cb: StreamCallbackFn)
 where
     H: Into<Hash40>,
 {
-    require_api_version(1, 1);
     unsafe { arcrop_register_callback_with_path(hash.into().as_u64(), cb) }
 }
 
+#[arcrop_api(version="1.2")]
 pub fn register_extension_callback<H>(hash: H, cb: ExtCallbackFn)
 where
     H: Into<Hash40>,
 {
-    require_api_version(1, 2);
     unsafe { arcrop_register_extension_callback(hash.into().as_u64(), cb) }
 }
 
@@ -89,11 +89,11 @@ where
     }
 }
 
+#[arcrop_api(version = "1.5")]
 pub fn is_file_loaded<H>(hash: H) -> bool
 where
     H: Into<Hash40>
 {
-    require_api_version(1, 5);
 
     unsafe {
         arcrop_is_file_loaded(
@@ -104,12 +104,11 @@ where
 
 /// Requires an absolute path, including the ``sd:/`` root.
 /// Do NOT include a trailing slash after the directory's name.
+#[arcrop_api(version = "1.8")]
 pub fn is_mod_enabled<H>(hash: H) -> bool
 where
     H: Into<Hash40>
 {
-    require_api_version(1, 8);
-
     unsafe {
         arcrop_is_mod_enabled(
             hash.into().as_u64()
@@ -117,18 +116,18 @@ where
     }
 }
 
+#[arcrop_api(version = "1.7")]
 pub fn show_mod_manager() {
-    require_api_version(1, 7);
     unsafe { arcrop_show_mod_manager(); }
 }
 
+#[arcrop_api(version="1.8")]
 pub fn show_config_editor() {
-    require_api_version(1, 8);
     unsafe { arcrop_show_config_editor(); }
 }
 
+#[arcrop_api(version="1.8")]
 pub fn show_main_menu() {
-    require_api_version(1, 8);
     unsafe { arcrop_show_main_menu(); }
 }
 
