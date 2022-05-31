@@ -9,8 +9,8 @@ mod kw {
 }
 
 struct APIVersionArgs {
-    pub major: u64,
-    pub minor: u64
+    pub major: u32,
+    pub minor: u32
 }
 #[proc_macro_attribute]
 pub fn arc_callback(_: TokenStream, item: TokenStream) -> TokenStream {
