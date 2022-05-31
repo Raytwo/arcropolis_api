@@ -1,6 +1,17 @@
 use proc_macro::TokenStream;
 use quote::quote;
+use syn::parse::ParseStream;
+use quote::ToTokens;
 
+// Idea stolen from skyline-rs, fails to compile if i use the keyword macro directly
+mod kw {
+    syn::custom_keyword!(version);
+}
+
+struct APIVersionArgs {
+    pub major: u64,
+    pub minor: u64
+}
 #[proc_macro_attribute]
 pub fn arc_callback(_: TokenStream, item: TokenStream) -> TokenStream {
     let func = syn::parse_macro_input!(item as syn::ItemFn);
@@ -21,7 +32,7 @@ pub fn arc_callback(_: TokenStream, item: TokenStream) -> TokenStream {
                 out_size: &mut usize
             ) -> bool {
                 let data = unsafe { std::slice::from_raw_parts_mut(data, size) };
-                
+
                 match CB(hash, data) {
                     Some(size) => {
                         *out_size = size;
@@ -60,7 +71,7 @@ pub fn stream_callback(_: TokenStream, item: TokenStream) -> TokenStream {
                 ) -> Option<(String, usize)> {
                     ::arcropolis_api::IntoStreamPath::into_stream_path(callback(hash))
                 }
-                
+
                 match inner(super::#ident, hash) {
                     Some((path, size)) => {
                         let path = ::std::ffi::CString::new(path).unwrap();
@@ -72,7 +83,7 @@ pub fn stream_callback(_: TokenStream, item: TokenStream) -> TokenStream {
                                 path_bytes.as_ptr(),
                                 out_path,
                                 path_bytes.len()
-                            ) 
+                            )
                         };
 
                         *out_size = size;
@@ -108,7 +119,7 @@ pub fn ext_callback(_: TokenStream, item: TokenStream) -> TokenStream {
                 out_size: &mut usize
             ) -> bool {
                 let data = unsafe { std::slice::from_raw_parts_mut(data, size) };
-                
+
                 match CB(hash, data) {
                     Some(size) => {
                         *out_size = size;
@@ -122,5 +133,54 @@ pub fn ext_callback(_: TokenStream, item: TokenStream) -> TokenStream {
         }
 
         #func
+    ).into()
+}
+
+impl syn::parse::Parse for APIVersionArgs {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        if input.peek(kw::version) {
+            let meta: syn::MetaNameValue = input.parse()?;
+
+            match meta.lit {
+                syn::Lit::Str(string) => {
+                    Ok(APIVersionArgs {
+                        major: string.value().split(".").collect::<Vec<&str>>()[0].parse().unwrap(),
+                        minor: string.value().split(".").collect::<Vec<&str>>()[1].parse().unwrap()
+                    })
+                }
+                _ => panic!("Invalid literal, must be a string")
+            }
+        } else {
+            panic!("Invalid argument!")
+        }
+    }
+}
+
+impl ToTokens for APIVersionArgs {
+    fn to_tokens(&self, tokens: &mut quote::__private::TokenStream) {
+        let major = self.major;
+        let minor = self.minor;
+        quote!(
+            crate::require_api_version(#major, #minor)
+        ).to_tokens(tokens);
+    }
+}
+
+#[proc_macro_attribute]
+pub fn arcrop_api(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let attr = syn::parse_macro_input!(attr as APIVersionArgs);
+    let func = syn::parse_macro_input!(item as syn::ItemFn);
+    let stmts = func.block.stmts.clone();
+    let sig = &func.sig;
+    let vis = &func.vis;
+
+    quote!(
+        #vis #sig {
+            #attr;
+            #(
+                #stmts
+            )*
+        }
+
     ).into()
 }
