@@ -7,4 +7,3 @@ edition = "2018"
 [dependencies]
 crc32fast = "1.3.2"
 arcropolis-api-macro = { path = "./arcropolis-api-macro" }
-smash-arc = { git = "https://github.com/jam1garner/smash-arc", features = ["smash-runtime", "rust-zstd"] }
