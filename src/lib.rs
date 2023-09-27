@@ -1,11 +1,13 @@
 #![feature(str_strip)]
 #![allow(stable_features)]
+#![feature(vec_into_raw_parts)]
 
 mod hash40;
 pub use hash40::{hash40, Hash40};
 
 mod stream_path;
 pub use stream_path::*;
+use std::ffi::CString;
 
 pub use arcropolis_api_macro::*;
 
@@ -23,6 +25,10 @@ extern "C" {
     fn arcrop_show_mod_manager();
     fn arcrop_show_config_editor();
     fn arcrop_show_main_menu();
+    fn arcorp_add_lua_manager(name: *mut u8, reg_vec_ptr: *mut luaL_Reg_to_arcrop, reg_vec_size: usize, reg_vec_cap: usize) -> bool;
+    fn arcrop_lua_state_get_string(lua_state: &mut lua_state) -> *const u8;
+    fn arcrop_lua_state_get_number(lua_state: &mut lua_state) -> f32;
+    fn arcrop_lua_state_get_integer(lua_state: &mut lua_state) -> u64;
 }
 
 #[repr(C)]
@@ -129,6 +135,21 @@ pub fn show_main_menu() {
     unsafe { arcrop_show_main_menu(); }
 }
 
+#[arcrop_api(version="1.9")]
+pub fn add_lua_manager(name: impl AsRef<str>, functions: Vec<luaL_Reg>) -> bool {
+    unsafe {
+        let name = CString::new(name.as_ref()).expect(&format!("Failed turning {} into a CString!", name.as_ref()));
+        let to_arcrop = functions.iter().map(|x|
+            luaL_Reg_to_arcrop {
+                name: CString::new(x.name.clone()).expect("Failed!").into_raw(),
+                func: x.func
+            }
+        ).collect::<Vec<luaL_Reg_to_arcrop>>();
+        let (ptr, size, cap) = to_arcrop.into_raw_parts();
+        arcorp_add_lua_manager(name.into_raw() as _, ptr as _, size, cap)
+    }
+}
+
 pub fn get_api_version() -> &'static ApiVersion {
     unsafe { arcrop_api_version() }
 }
@@ -141,4 +162,36 @@ pub fn require_api_version(major: u32, minor: u32) {
 pub struct ApiVersion {
     pub major: u32,
     pub minor: u32,
+}
+
+#[repr(C)]
+pub struct lua_state {}
+
+impl lua_state {
+    pub fn get_string_arg(&mut self) -> String {
+        unsafe {
+            let ptr = arcrop_lua_state_get_string(self);
+            skyline::from_c_str(ptr)
+        }
+    }
+    pub fn get_number_arg(&mut self) -> f32 {
+        unsafe { arcrop_lua_state_get_number(self) }
+    }
+    pub fn get_integer_arg(&mut self) -> u64 {
+        unsafe { arcrop_lua_state_get_integer(self) }
+    }
+}
+
+pub type LuaCfunction = ::std::option::Option<unsafe extern "C" fn(L: &mut lua_state) -> ::std::os::raw::c_int>;
+
+#[repr(C)]
+pub struct luaL_Reg {
+    pub name: String,
+    pub func: LuaCfunction,
+}
+
+#[repr(C)]
+struct luaL_Reg_to_arcrop {
+    pub name: *mut u8,
+    pub func: LuaCfunction,
 }
