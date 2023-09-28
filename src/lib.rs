@@ -25,7 +25,8 @@ extern "C" {
     fn arcrop_show_mod_manager();
     fn arcrop_show_config_editor();
     fn arcrop_show_main_menu();
-    fn arcorp_add_lua_manager(name: *mut u8, reg_vec_ptr: *mut luaL_Reg_to_arcrop, reg_vec_size: usize, reg_vec_cap: usize) -> bool;
+    fn arcorp_add_lua_menu_manager(name: *mut u8, reg_vec_ptr: *mut luaL_Reg_to_arcrop, reg_vec_size: usize, reg_vec_cap: usize) -> bool;
+    fn arcorp_add_lua_item_manager(name: *mut u8, reg_vec_ptr: *mut luaL_Reg_to_arcrop, reg_vec_size: usize, reg_vec_cap: usize) -> bool;
     fn arcrop_lua_state_get_string(lua_state: &mut lua_state) -> *const u8;
     fn arcrop_lua_state_get_number(lua_state: &mut lua_state) -> f32;
     fn arcrop_lua_state_get_integer(lua_state: &mut lua_state) -> u64;
@@ -136,7 +137,7 @@ pub fn show_main_menu() {
 }
 
 #[arcrop_api(version="1.9")]
-pub fn add_lua_manager(name: impl AsRef<str>, functions: Vec<luaL_Reg>) -> bool {
+pub fn add_lua_menu_manager(name: impl AsRef<str>, functions: Vec<luaL_Reg>) -> bool {
     unsafe {
         let name = CString::new(name.as_ref()).expect(&format!("Failed turning {} into a CString!", name.as_ref()));
         let to_arcrop = functions.iter().map(|x|
@@ -146,7 +147,22 @@ pub fn add_lua_manager(name: impl AsRef<str>, functions: Vec<luaL_Reg>) -> bool 
             }
         ).collect::<Vec<luaL_Reg_to_arcrop>>();
         let (ptr, size, cap) = to_arcrop.into_raw_parts();
-        arcorp_add_lua_manager(name.into_raw() as _, ptr as _, size, cap)
+        arcorp_add_lua_menu_manager(name.into_raw() as _, ptr as _, size, cap)
+    }
+}
+
+#[arcrop_api(version="1.9")]
+pub fn add_lua_item_manager(name: impl AsRef<str>, functions: Vec<luaL_Reg>) -> bool {
+    unsafe {
+        let name = CString::new(name.as_ref()).expect(&format!("Failed turning {} into a CString!", name.as_ref()));
+        let to_arcrop = functions.iter().map(|x|
+            luaL_Reg_to_arcrop {
+                name: CString::new(x.name.clone()).expect("Failed!").into_raw(),
+                func: x.func
+            }
+        ).collect::<Vec<luaL_Reg_to_arcrop>>();
+        let (ptr, size, cap) = to_arcrop.into_raw_parts();
+        arcorp_add_lua_item_manager(name.into_raw() as _, ptr as _, size, cap)
     }
 }
 
