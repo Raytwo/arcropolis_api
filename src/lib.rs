@@ -30,6 +30,12 @@ extern "C" {
     fn arcrop_lua_state_get_string(lua_state: &mut lua_state) -> *const u8;
     fn arcrop_lua_state_get_number(lua_state: &mut lua_state) -> f32;
     fn arcrop_lua_state_get_integer(lua_state: &mut lua_state) -> u64;
+
+    fn arcrop_lua_state_push_bool(lua_state: &mut lua_state, val: bool);
+    fn arcrop_lua_state_push_integer(lua_state: &mut lua_state, val: u64);
+    fn arcrop_lua_state_push_number(lua_state: &mut lua_state, val: f32);
+    fn arcrop_lua_state_push_nil(lua_state: &mut lua_state);
+    fn arcrop_lua_state_push_string(lua_state: &mut lua_state, str: *mut u8);
 }
 
 #[repr(C)]
@@ -181,7 +187,9 @@ pub struct ApiVersion {
 }
 
 #[repr(C)]
-pub struct lua_state {}
+pub struct lua_state {
+    pub test: u8
+}
 
 impl lua_state {
     pub fn get_string_arg(&mut self) -> String {
@@ -196,6 +204,23 @@ impl lua_state {
     pub fn get_integer_arg(&mut self) -> u64 {
         unsafe { arcrop_lua_state_get_integer(self) }
     }
+
+    pub fn push_bool(&mut self, val: bool) {
+        unsafe { arcrop_lua_state_push_bool(self, val) }
+    }
+    pub fn push_integer(&mut self, val: u64) {
+        unsafe { arcrop_lua_state_push_integer(self, val) }
+    }
+    pub fn push_number(&mut self, val: f32) {
+        unsafe { arcrop_lua_state_push_number(self, val) }
+    }
+    pub fn push_nil(&mut self) {
+        unsafe { arcrop_lua_state_push_nil(self) }
+    }
+    pub fn push_string(&mut self, str: impl AsRef<str>) {
+        unsafe { arcrop_lua_state_push_string(self, CString::new(format!("{}", str.as_ref())).expect(&format!("Failed to make '{}' into a CString!", str.as_ref())).into_raw() as _) }
+    }
+
 }
 
 pub type LuaCfunction = ::std::option::Option<unsafe extern "C" fn(L: &mut lua_state) -> ::std::os::raw::c_int>;
