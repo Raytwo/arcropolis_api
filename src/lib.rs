@@ -148,7 +148,7 @@ pub fn add_lua_menu_manager(name: impl AsRef<str>, functions: Vec<luaL_Reg>) -> 
         let name = CString::new(name.as_ref()).expect(&format!("Failed turning {} into a CString!", name.as_ref()));
         let to_arcrop = functions.iter().map(|x|
             luaL_Reg_to_arcrop {
-                name: CString::new(x.name.clone()).expect("Failed!").into_raw(),
+                name: CString::new(x.name.clone()).expect("Failed!").into_raw() as *mut u8,
                 func: x.func
             }
         ).collect::<Vec<luaL_Reg_to_arcrop>>();
@@ -163,7 +163,7 @@ pub fn add_lua_ingame_manager(name: impl AsRef<str>, functions: Vec<luaL_Reg>) -
         let name = CString::new(name.as_ref()).expect(&format!("Failed turning {} into a CString!", name.as_ref()));
         let to_arcrop = functions.iter().map(|x|
             luaL_Reg_to_arcrop {
-                name: CString::new(x.name.clone()).expect("Failed!").into_raw(),
+                name: CString::new(x.name.clone()).expect("Failed!").into_raw() as *mut u8,
                 func: x.func
             }
         ).collect::<Vec<luaL_Reg_to_arcrop>>();
